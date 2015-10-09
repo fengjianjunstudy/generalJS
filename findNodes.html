@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		*{margin:0; padding: 0;}
+		div{ line-height: 30px; font-size: 14px; text-align: center; font-family:"微软雅黑"}
+	</style>
+</head>
+<body>
+	<div class="first">first</div>
+	<div class="second">second</div>
+	<div class="first">first</div>
+	<div class="second">second</div>
+	<div class="first">first</div>
+	<div class="second">second</div>
+	<div class="first">first</div>
+	<div class="second">second</div>
+	<div class="first">first</div>
+	<div class="second">second</div>
+	<script type="text/javascript" src="myApp.js"></script>
+	<script type="text/javascript">
+		function changeFirst(node){
+			if(node.className === "first"){
+				node.style.fontSize="18px";
+				return true; 
+			}else{ 
+				return false;
+			} 
+		}
+		function hideSecond(node){
+			if(node.className === "second"){ 
+				node.style.backgroundColor="#ccc"
+			} 
+		}
+		var first_node=myApp.findNodes("div",changeFirst);
+		var second_node=myApp.findNodes("div",hideSecond);
+		var noCallBack=myApp.findNodes("div")
+		console.log(first_node)
+		console.log(second_node)
+		console.log(noCallBack)
+	</script>
+</body>
+</html>
