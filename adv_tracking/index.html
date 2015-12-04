@@ -3,9 +3,38 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<style type="text/css">
+		*{margin:0; padding: 0;}
+		.container{ position: relative; width: 1000px;margin:0 auto; height: 5000px;}
+		.container div{width: 100px; height: 100px; position: absolute; background-color:red}
+		.adv1{ top: 20px; left: 30px;}
+		.adv2{ top: 800px;left: 200px;}
+		.adv3{top:500px; left: 400px;}
+	</style>
 </head>
 <body>
+	<div class="container" id="container">
+		<div class="J_adv adv1" data-aid="adv_1" data-mod="1" data-view="true"><a href="http://www.baidu.com">百度</a><a href="http://www.126.com"><img src="" title="126" alt="" width="30" height="30"></a></div>
+		<div class="J_adv adv2" data-aid="adv_2" data-mod="2" data-view="false"><a href="http://www.163.com">163</a></div>
+		<div class="J_adv adv3" data-aid="adv_3" data-mod="2" data-view="false"><a href="http://www.taobao.com">淘宝</a><a href="http://tmall.com">天猫</a></div>
+	</div>
+	
 	<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
 	<script type="text/javascript" src="tracking.js"></script>
+	<script type="text/javascript">
+		CSDN.track.addAdvs();
+		setTimeout(function(){
+			var con=document.getElementById("container");
+			var div=document.createElement("div");
+			div.innerHTML="<a href='http://www.jd.com'>京东</a>"
+			div.setAttribute("class","J_a");
+			div.setAttribute("data-aid","adv_4");
+			div.setAttribute("data-amod","6");
+			div.style.top=0;
+			div.style.left="300px";
+			con.appendChild(div);
+			CSDN.track.addAdvs(".J_a",{aid:""});
+		},10000)
+	</script>
 </body>
 </html>
