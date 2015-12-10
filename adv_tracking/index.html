@@ -5,6 +5,7 @@
 	<title>Document</title>
 	<style type="text/css">
 		*{margin:0; padding: 0;}
+		ul,li{ list-style: none;}
 		.container{ position: relative; width: 1000px;margin:0 auto; height: 5000px;}
 		.container>div{width: 100px; height: 100px; position: absolute; background-color:red}
 		.adv1{ top: 20px; left: 30px;}
@@ -19,6 +20,11 @@
 			left: 560px;
 			top: 350px;
 		}
+		.container .hot>div{ position: absolute; left: 0; top: 0; background-color: transparent;}
+		.hot img { width: 300px; height: 200px; }
+.hot ul { width: 110px; position: absolute; bottom: 5px; right: 50%; margin-right: -80px; padding: 0px 10px; }
+.hot ul li { float: left; width: 10px; height: 10px; margin-right: 5px; background-color:#ccc; border-radius: 50%; cursor: pointer; }
+.hot ul li.cur, .hot ul li:hover { background-color: red; }
 	</style>
 </head>
 <body>
@@ -28,18 +34,17 @@
 		<div class="J_adv adv3" data-aid="adv_3" data-mod="2" data-view="true"><a href="http://www.taobao.com">淘宝</a><a href="http://tmall.com">天猫</a></div>
 		<div class="box hot"> 
 	      <div adsid="home08a">
-				<div data-view="true" data-mod="2" data-aid="ad_popu_45" data-swapimg="true" data-ideaid="ad_content_71" class="J_adv"><a href="http://www.baidu.com" target="_blank"><img src="http://img.bss.csdn.net/201512091551588937.jpg"></a></div></div>
+				<div data-view="true" data-mod="2" data-aid="ad_popu_45" data-swapimg="true" data-ideaid="ad_content_71" class=" curSwap J_adv" style="opacity: 1;"><a href="http://www.baidu.com" target="_blank"><img src="http://img.bss.csdn.net/201512091551588937.jpg"></a></div></div>
 	      <div adsid="home08b">
-				<div data-view="true" data-mod="2" data-aid="ad_popu_44" data-ideaid="ad_content_70" class="J_adv"><a href="http://www.baidu.com" target="_blank" style="display: list-item;"><img src="http://img.bss.csdn.net/201512091551217301.jpg"></a></div>
+				<div data-view="true" data-mod="2" data-aid="ad_popu_44" data-swapimg="true" data-ideaid="ad_content_70" class="J_adv" style="opacity: 0;"><a href="http://www.baidu.com" target="_blank" style="display: list-item;"><img src="http://img.bss.csdn.net/201512091551217301.jpg"></a></div>
 		  </div>
 	      <div adsid="home08c">
-		  		<div data-view="true" data-mod="2" data-aid="ad_popu_46" data-ideaid="ad_content_66" class="J_adv"><a href="http://www.baidu.com/"><img src="http://img.bss.csdn.net/201512081641386033.jpg"></a></div>
+		  		<div data-view="true" data-mod="2" data-aid="ad_popu_46" data-swapimg="true" data-ideaid="ad_content_66" class="J_adv" style="opacity: 0;"><a href="http://www.baidu.com/"><img src="http://img.bss.csdn.net/201512081641386033.jpg"></a></div>
 		  </div>
 	      <div adsid="home08d">
-		  		<div data-view="true" data-mod="2" data-aid="ad_popu_47" data-ideaid="ad_content_67" class="J_adv"><a href="http://www.baidu.com/"><img src="http://img.bss.csdn.net/201512081642335550.gif"></a></div>
+		  		<div data-view="true" data-mod="2" data-aid="ad_popu_47" data-swapimg="true" data-ideaid="ad_content_67" class="J_adv" style="opacity: 0;"><a href="http://www.baidu.com/"><img src="http://img.bss.csdn.net/201512081642335550.gif"></a></div>
 		  </div>
-	      <ul class="clearfix js-tagRoot">
-	      <li class=""></li><li class="current"></li><li class=""></li><li class=""></li></ul>
+	      <ul class="clearfix js-tagRoot"></ul>
 	    </div>
 	</div>
 	

@@ -11,7 +11,7 @@
 		this.dataArr=[]; 
 		this.dataTimer=null;
 		this.swapImg=false;  //如果页面有轮播图时为true
-		this.swapImgArr=[];  //存放轮播图广告数组
+		//this.swapImgArr=[];  //存放轮播图广告数组
 		this.init();
 	}
 	TrackAdv.prototype={
@@ -27,22 +27,7 @@
 					}
 					timer=setTimeout(function(){
 						timer=null;
-						if(self.advs.length === 0){
-							return false;
-						}
-						for(var i=0;i<self.advs.length;i++){
-							
-							if(self.advs[i].view && self.posTest(self.advs[i])){
-								self.advs[i].viewed=true;
-								//self.sendData(self.advs[i]);
-								if(!self.dataTimer){
-									self.discreteSend();
-								}
-								self.dataArr.push(self.advs[i]);
-								
-							}
-
-						}
+						self.insertData();
 					},100)
 				}
 			})();
@@ -92,18 +77,56 @@
 					ck:"-"
 				};
 				if(this.posTest(adv) && adv.view){
-					adv.viewed=true;
-					if(!this.dataTimer){
-						this.discreteSend();
+					if($(oAdvs[i]).data("swapimg")){  //是轮播图广告的情况
+						if(!this.swapImg){
+							//触发轮播图方法
+							SwapImg({},this);
+							this.swapImg=true;
+						}
+						if($(oAdvs[i]).hasClass("curSwap")){
+							adv.viewed=true;
+							if(!this.dataTimer){
+								this.discreteSend();
+							}
+							this.dataArr.push(adv);
+						}
+					}else{ //如果不是轮播图的只要进入屏幕区域就算曝光
+						adv.viewed=true;
+						if(!this.dataTimer){
+							this.discreteSend();
+						}
+						this.dataArr.push(adv);
+						//this.sendData(adv);
 					}
-					this.dataArr.push(adv);
-					//this.sendData(adv);
+					
 				}
 				this.advs.push(adv);
 				this.linkNodes(adv);
 				//console.log(this.advs);
 				//this.expAdvs.push(adv);
 				this.advFlag[aid]=true;
+			}
+		},
+		insertData:function(){
+			var self=this;
+			if(self.advs.length === 0){
+				return false;
+			}
+			for(var i=0;i<self.advs.length;i++){
+				
+				if(self.advs[i].view && self.posTest(self.advs[i])){
+					if(self.advs[i].ele.data("swapimg") && !self.advs[i].ele.hasClass("curSwap")){
+						continue;
+					}
+					self.advs[i].viewed=true;
+					//self.sendData(self.advs[i]);
+					if(!self.dataTimer){
+						self.discreteSend();
+					}
+					self.dataArr.push(self.advs[i]);
+					
+				}
+
 			}
 		},
 		//每隔1秒提交一次曝光数据(1条)
@@ -125,7 +148,7 @@
 					}
 				}
 			}
-			this.dataTimer=setInterval(discreteHandle,10000)
+			this.dataTimer=setInterval(discreteHandle,100)
 		},
 		// 获取曝光内容即广告位中所有连接的内容
 		exportData:function(adv){
@@ -214,6 +237,70 @@
 			}
 		}*/
 	}
+	//轮播图   淡入淡出
+	function SwapImg(opts,obj){
+		if(!(this instanceof SwapImg)){
+			return new SwapImg(opts,obj);
+
+		}
+		this.obj=obj;
+		this.swapSelector=opts.swapSelector || ".box .J_adv";
+		this.swapCur="curSwap";
+		this.iconSelector=opts.iconSelector || ".js-tagRoot";
+		this.iconCur="cur";
+		this.duration=opts.duration || 500;
+		this.interval=opts.interval || 2000;
+		this.lastIndex=-1;
+		this.index=0;
+		this.swapFlag=false; //是否正在轮播中
+		this.timer=null;
+		this.init();
+	}
+	SwapImg.prototype={
+		constructor:SwapImg,
+		init:function(){
+			var self=this,
+				swapNode=$(this.swapSelector),
+				swapLen=swapNode.length,
+				iconNode=$(this.iconSelector),
+				iconStr="";
+			for(var i=0;i<swapLen;i++){
+				iconStr+=i==0?"<li class='cur'></li>":"<li></li>";
+			}
+			iconNode.html(iconStr);
+			iconNode.find("li").each(function(i){
+				$(this).on("click",function(){
+					if($(this).hasClass("cur") || self.swapFlag ){
+						return false;
+					}
+					self.swapHandle(i);
+				})
+
+			});
+			self.timer=setTimeout(function(){
+				self.swapHandle();
+			},self.interval);
+
+		},
+		swapHandle:function(i){
+			var self=this;
+			clearTimeout(self.timer);
+			self.swapFlag=true;
+			self.lastIndex=self.index;
+			self.index=i || ++self.index%$(self.swapSelector).length;
+			$(self.iconSelector).find("li").removeClass("cur").eq(self.index).addClass("cur");
+			$(self.swapSelector).removeClass("curSwap").eq(self.index).addClass("curSwap");
+			$(self.swapSelector).eq(self.index).animate({opacity:1},self.duration);
+			$(self.swapSelector).eq(self.lastIndex).animate({opacity:0},self.duration,function(){
+				self.obj.insertData();
+				self.timer=setTimeout(function(){
+					self.swapHandle();
+				},self.interval);
+				self.swapFlag=false;
+			})
+		}
+	}
+
 	widnow.CSDN=widnow.CSDN?widnow.CSDN:{};
 	return window.CSDN.track=new TrackAdv();
 })(window,jQuery)
