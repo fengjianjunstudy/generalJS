@@ -8,26 +8,56 @@
 		this.advs=[];  // 被载入广告位集合
 		this.advFlag={};  //  用于载入广告位去重
 		//this.expAdvs=[];
+		this.dataArr=[]; 
+		this.dataTimer=null;
+		this.swapImg=false;  //如果页面有轮播图时为true
+		this.swapImgArr=[];  //存放轮播图广告数组
 		this.init();
 	}
 	TrackAdv.prototype={
 		constructor:"Track",
 		init:function(){
 			var self=this;
-			$(widnow).on("scroll",function(){
-				if(self.advs.length === 0){
+			//滚动处理函数  采用了事件节流 每隔100毫米计算一次
+			var scrollHandle=(function(){
+				var timer=null;
+				return function(){
+					if(timer){
+						return false;
+					}
+					timer=setTimeout(function(){
+						timer=null;
+						if(self.advs.length === 0){
+							return false;
+						}
+						for(var i=0;i<self.advs.length;i++){
+							
+							if(self.advs[i].view && self.posTest(self.advs[i])){
+								self.advs[i].viewed=true;
+								//self.sendData(self.advs[i]);
+								if(!self.dataTimer){
+									self.discreteSend();
+								}
+								self.dataArr.push(self.advs[i]);
+								
+							}
+
+						}
+					},100)
+				}
+			})();
+			//关闭浏览器 关闭当前页 跳转到其他页面时 将没有提交的数据一次行提交
+			var unloadHandle=function(){
+				if(self.dataArr.length ===0){
 					return false;
 				}
-				for(var i=0;i<self.advs.length;i++){
-					
-					if(self.posTest(self.advs[i]) && self.advs[i].view){
-						self.advs[i].viewed=true;
-						self.sendData(self.advs[i]);
-						
-					}
-
+				for(var i=0,len=self.dataArr.length;i<len;i++){
+					self.sendData(self.dataArr[i]);
 				}
-			})
+				self.dataArr=[];
+			}
+			$(window).on("scroll",scrollHandle);
+			$(window).on("unload",unloadHandle);
 		},
 		//载入广告对象
 		addAdvs:function(eleStr,opt){
@@ -36,7 +66,7 @@
 				opt=typeof opt === "object"?opt:{},
 				oAdvs=$(eleStr),
 				nAdvLen=oAdvs.length,
-				curAdr=widnow.location.href,  //  当前地址
+				//curAdr=widnow.location.href,  //  当前地址
 				preAdr=document.referrer || "-";   // 前一个文档地址
 			if(nAdvLen === 0){
 				return false;
@@ -53,26 +83,53 @@
 				adv.view=typeof $(oAdvs[i]).data("view") === "undefined" ?true:$(oAdvs[i]).data("view");  //  对应广告位是否需要曝光
 				adv.viewed=false;   //被曝光时为true
 				adv.data={
-					aId:$(oAdvs[i]).data("aid"),
-					curAdr:curAdr,
-					preAdr:preAdr,
-					amod:opt.amod || adv.ele.data("amod") || 1,
+					uid:"-",
+					ref:preAdr,
+					mod:$(oAdvs[i]).data("aid"),
+					//curAdr:curAdr,
+					mtp:opt.amod || adv.ele.data("amod") || 1,
 					con:self.exportData(adv),
-					ckCon:"-",
-					uId:"-"
+					ck:"-"
 				};
 				if(this.posTest(adv) && adv.view){
 					adv.viewed=true;
-					this.sendData(adv);
+					if(!this.dataTimer){
+						this.discreteSend();
+					}
+					this.dataArr.push(adv);
+					//this.sendData(adv);
 				}
 				this.advs.push(adv);
 				this.linkNodes(adv);
 				//console.log(this.advs);
 				//this.expAdvs.push(adv);
 				this.advFlag[aid]=true;
-
 			}
-
+		},
+		//每隔1秒提交一次曝光数据(1条)
+		discreteSend:function(){
+			var self=this;
+			var discreteHandle=function(){
+				if(self.dataArr.length ===0){
+					return false;
+				}
+				var i=0;
+				while(i<1){
+					if(self.dataArr[0]){
+						self.sendData(self.dataArr[0]);
+						self.dataArr.shift();
+						i++;
+					}else{
+						self.dataTimer=null;
+						break;
+					}
+				}
+			}
+			this.dataTimer=setInterval(discreteHandle,10000)
+		},
+		// 获取曝光内容即广告位中所有连接的内容
+		exportData:function(adv){
+			return adv.ele.data("ideaid")
 		},
 		// 测试广告位是否在曝光区域
 		posTest:function(adv){
@@ -83,7 +140,6 @@
 			t1=t1<=0?0:t1;
 			var t2=$(document).scrollTop()+$(widnow).height();
 			return !adv.viewed && adv.top>=t1 && adv.top<=t2;
-
 		},
 		// 获取广告位中所有的连接且添加click事件
 		linkNodes:function(adv){
@@ -92,7 +148,6 @@
 			if(aLinks.length === 0){
 				return false;
 			}
-
 			aLinks.each(function(){
 				if($(this).attr("target") == undefined){
 					$(this).attr("target","_blank");
@@ -104,30 +159,15 @@
 				})
 			})
 		},
-		// 获取曝光内容即广告位中所有连接的内容
-		exportData:function(adv){
-			var eleLinks=adv.ele.find("a");
-			var cons=eleLinks.map(function(){
-						var con="";
-						if($(this).find("img").length){
-							con+=$(this).find("img").eq(0).attr("title") || $(this).find("img").eq(0).attr("alt")
-						}else{
-
-							con+=$(this).html();
-						}
-						con+=":";
-						con+=$(this).attr("href");
-						return con;
-					}).get().join(";");
-			return cons;
-		},
 		//获取点击元素的内容
 		linkData:function(that){
+			var ck=""+that.href;
 			if($(that).find("img").length){
-				return $(that).find("img").eq(0).attr("title") || $(that).find("img").eq(0).attr("alt")
+				ck+=$(that).find("img").eq(0).attr("title") || $(that).find("img").eq(0).attr("alt") ||"";
 			}else{
-				return $(that).html();
+				ck+=$(that).html() || "";
 			}
+			return ck;
 
 		},
 		//获取用户ID
@@ -138,9 +178,9 @@
 		},
 		//提交数据
 		sendData:function(adv,con){
-			adv.data.uId=this.getUserId();
+			adv.data.uid=this.getUserId();
 			if(typeof con === "string"){
-				adv.data.ckCon=con;
+				adv.data.ck=con;
 			}
 			protocol="http:";
 			var img =new Image();
@@ -151,7 +191,7 @@
 			var dataStr=this.paramData(adv.data);
 			img.src=protocol+"//dc.csdn.net/re?"+dataStr;
 		},
-		//转换为字符串
+		//数据转换为字符串形式
 		paramData:function(data){
 			var dataArr=[];
 			for(var key in data){
@@ -161,6 +201,18 @@
 			}
 			return dataArr.join("&")
 		}
+		//处理url
+		/*handleUrl:function(url){
+			if(typeof url === "string" && url.length >0 ){
+				var hostStr=url.split("://")[1];
+				hostName=hostStr.split(".")[0];
+				strArr=hostStr.split("?")[0].split("/");
+				fileName=strArr[strArr.length-1];
+				return hostName+"_"+fileName;
+			}else{
+				return false;
+			}
+		}*/
 	}
 	widnow.CSDN=widnow.CSDN?widnow.CSDN:{};
 	return window.CSDN.track=new TrackAdv();

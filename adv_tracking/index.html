@@ -6,17 +6,41 @@
 	<style type="text/css">
 		*{margin:0; padding: 0;}
 		.container{ position: relative; width: 1000px;margin:0 auto; height: 5000px;}
-		.container div{width: 100px; height: 100px; position: absolute; background-color:red}
+		.container>div{width: 100px; height: 100px; position: absolute; background-color:red}
 		.adv1{ top: 20px; left: 30px;}
 		.adv2{ top: 800px;left: 200px;}
 		.adv3{top:500px; left: 400px;}
+		.container .hot {
+			width: 300px;
+			height: 200px;
+			overflow: hidden;
+			position: absolute;
+			z-index: 0;
+			left: 560px;
+			top: 350px;
+		}
 	</style>
 </head>
 <body>
 	<div class="container" id="container">
 		<div class="J_adv adv1" data-aid="adv_1" data-mod="1" data-view="true"><a href="http://www.baidu.com">百度</a><a href="http://www.126.com"><img src="" title="126" alt="" width="30" height="30"></a></div>
-		<div class="J_adv adv2" data-aid="adv_2" data-mod="2" data-view="false"><a href="http://www.163.com">163</a></div>
-		<div class="J_adv adv3" data-aid="adv_3" data-mod="2" data-view="false"><a href="http://www.taobao.com">淘宝</a><a href="http://tmall.com">天猫</a></div>
+		<div class="J_adv adv2" data-aid="adv_2" data-mod="2" data-view="true"><a href="http://www.163.com">163</a></div>
+		<div class="J_adv adv3" data-aid="adv_3" data-mod="2" data-view="true"><a href="http://www.taobao.com">淘宝</a><a href="http://tmall.com">天猫</a></div>
+		<div class="box hot"> 
+	      <div adsid="home08a">
+				<div data-view="true" data-mod="2" data-aid="ad_popu_45" data-swapimg="true" data-ideaid="ad_content_71" class="J_adv"><a href="http://www.baidu.com" target="_blank"><img src="http://img.bss.csdn.net/201512091551588937.jpg"></a></div></div>
+	      <div adsid="home08b">
+				<div data-view="true" data-mod="2" data-aid="ad_popu_44" data-ideaid="ad_content_70" class="J_adv"><a href="http://www.baidu.com" target="_blank" style="display: list-item;"><img src="http://img.bss.csdn.net/201512091551217301.jpg"></a></div>
+		  </div>
+	      <div adsid="home08c">
+		  		<div data-view="true" data-mod="2" data-aid="ad_popu_46" data-ideaid="ad_content_66" class="J_adv"><a href="http://www.baidu.com/"><img src="http://img.bss.csdn.net/201512081641386033.jpg"></a></div>
+		  </div>
+	      <div adsid="home08d">
+		  		<div data-view="true" data-mod="2" data-aid="ad_popu_47" data-ideaid="ad_content_67" class="J_adv"><a href="http://www.baidu.com/"><img src="http://img.bss.csdn.net/201512081642335550.gif"></a></div>
+		  </div>
+	      <ul class="clearfix js-tagRoot">
+	      <li class=""></li><li class="current"></li><li class=""></li><li class=""></li></ul>
+	    </div>
 	</div>
 	
 	<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
