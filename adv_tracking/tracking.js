@@ -7,11 +7,9 @@
 	function TrackAdv(){
 		this.advs=[];  // 被载入广告位集合
 		this.advFlag={};  //  用于载入广告位去重
-		//this.expAdvs=[];
-		this.dataArr=[]; 
+		this.dataArr=[]; //缓存需要提交数据的广告对象
 		this.dataTimer=null;
-		this.swapImg=false;  //如果页面有轮播图时为true
-		//this.swapImgArr=[];  //存放轮播图广告数组
+		this.swapImg=false;  //第一个轮播图广告位载入时 触发轮播图方法  之后不再不再触发
 		this.init();
 	}
 	TrackAdv.prototype={
@@ -27,6 +25,25 @@
 					}
 					timer=setTimeout(function(){
 						timer=null;
+						/*if(self.advs.length === 0){
+							return false;
+						}
+						for(var i=0;i<self.advs.length;i++){
+							
+							if(self.advs[i].view && self.posTest(self.advs[i])){
+								if(self.advs[i].ele.data("swapimg") && !self.advs[i].ele.hasClass("curSwap")){
+									continue;
+								}
+								self.advs[i].viewed=true;
+								//self.sendData(self.advs[i]);
+								if(!self.dataTimer){
+									self.discreteSend();
+								}
+								self.dataArr.push(self.advs[i]);
+								
+							}
+
+						}*/
 						self.insertData();
 					},100)
 				}
@@ -51,7 +68,6 @@
 				opt=typeof opt === "object"?opt:{},
 				oAdvs=$(eleStr),
 				nAdvLen=oAdvs.length,
-				//curAdr=widnow.location.href,  //  当前地址
 				preAdr=document.referrer || "-";   // 前一个文档地址
 			if(nAdvLen === 0){
 				return false;
@@ -59,7 +75,7 @@
 			for(var i=0;i<nAdvLen;i++){
 				var adv={};
 				var aid=$(oAdvs[i]).data("aid");
-				if(this.advFlag[aid]){
+				if(this.advFlag[aid]){ 
 					return false;
 				}
 				adv.ele=$(oAdvs[i]);
@@ -71,18 +87,18 @@
 					uid:"-",
 					ref:preAdr,
 					mod:$(oAdvs[i]).data("aid"),
-					//curAdr:curAdr,
 					mtp:opt.amod || adv.ele.data("amod") || 1,
 					con:self.exportData(adv),
 					ck:"-"
 				};
+				if(adv.ele.data("swapimg") && !this.swapImg){
+					//只触发一次轮播图方法
+					adv.ele.addClass("curSwap");
+					SwapImg({},this);
+					this.swapImg=true;
+				}
 				if(this.posTest(adv) && adv.view){
-					if($(oAdvs[i]).data("swapimg")){  //是轮播图广告的情况
-						if(!this.swapImg){
-							//触发轮播图方法
-							SwapImg({},this);
-							this.swapImg=true;
-						}
+					if($(oAdvs[i]).data("swapimg")){  //是轮播图广告位的情况
 						if($(oAdvs[i]).hasClass("curSwap")){
 							adv.viewed=true;
 							if(!this.dataTimer){
@@ -92,6 +108,8 @@
 						}
 					}else{ //如果不是轮播图的只要进入屏幕区域就算曝光
 						adv.viewed=true;
+
+						//如果定时提交数据的定时器没有开启的话，开启定时器
 						if(!this.dataTimer){
 							this.discreteSend();
 						}
@@ -119,12 +137,15 @@
 						continue;
 					}
 					self.advs[i].viewed=true;
-					//self.sendData(self.advs[i]);
+
+					//将广告对象添加到数据队列(dataArr)即可并等待提交
+					self.dataArr.push(self.advs[i]);
+
+					//如果定时提交数据的定时器没有开启的话，开启定时器
 					if(!self.dataTimer){
 						self.discreteSend();
 					}
-					self.dataArr.push(self.advs[i]);
-					
+
 				}
 
 			}
@@ -134,6 +155,7 @@
 			var self=this;
 			var discreteHandle=function(){
 				if(self.dataArr.length ===0){
+					self.dataTimer=null;
 					return false;
 				}
 				var i=0;
@@ -191,7 +213,6 @@
 				ck+=$(that).html() || "";
 			}
 			return ck;
-
 		},
 		//获取用户ID
 		getUserId:function(){
@@ -292,7 +313,9 @@
 			$(self.swapSelector).removeClass("curSwap").eq(self.index).addClass("curSwap");
 			$(self.swapSelector).eq(self.index).animate({opacity:1},self.duration);
 			$(self.swapSelector).eq(self.lastIndex).animate({opacity:0},self.duration,function(){
-				self.obj.insertData();
+				if(self.obj && typeof self.obj.insertData === "function"){
+					self.obj.insertData();
+				}
 				self.timer=setTimeout(function(){
 					self.swapHandle();
 				},self.interval);
@@ -300,7 +323,6 @@
 			})
 		}
 	}
-
 	widnow.CSDN=widnow.CSDN?widnow.CSDN:{};
 	return window.CSDN.track=new TrackAdv();
 })(window,jQuery)
