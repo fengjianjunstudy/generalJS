@@ -21,14 +21,14 @@
 			top: 350px;
 			background-color: transparent;
 		}
-		.container .hot>div{ position: absolute; left: 0; top: 0; background-color: transparent;}
+		.container .hot>div{ position: absolute; left: 0; top: 0; background-color: transparent; z-index: 0}
 
 		.hot img { width: 300px; height: 200px; }
-		.hot ul { width: 110px; position: absolute; bottom: 5px; right: 50%; margin-right: -80px; padding: 0px 10px; }
+		.hot ul { width: 110px; position: absolute; bottom: 5px; right: 50%; margin-right: -80px; padding: 0px 10px; z-index: 101 }
 		.hot ul li { float: left; width: 10px; height: 10px; margin-right: 5px; background-color:#ccc; border-radius: 50%; cursor: pointer; }
 		.hot ul li.cur{ background-color: red; }
-		.hot div[data-aid]{ opacity: 0;}
-		.container .hot .curSwap{opacity: 1};
+		.hot div[data-aid]{ opacity: 0; height:208px; }
+		.container .hot .curSwap{opacity: 1;z-index: 100; display: block;};
 	</style>
 </head>
 <body>

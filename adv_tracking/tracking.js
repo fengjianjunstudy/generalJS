@@ -74,26 +74,26 @@
 			}
 			for(var i=0;i<nAdvLen;i++){
 				var adv={};
-				var aid=$(oAdvs[i]).data("aid");
-				if(this.advFlag[aid]){ 
+				var mod=$(oAdvs[i]).data("mod");
+				if(this.advFlag[mod]){ 
 					return false;
 				}
 				adv.ele=$(oAdvs[i]);
 				adv.top=$(oAdvs[i]).offset().top;
-				adv.height=$(oAdvs[i]).height();
+				adv.height=$(oAdvs[i]).height()?$(oAdvs[i]).height():$(oAdvs[i]).find("img").height();
 				adv.view=typeof $(oAdvs[i]).data("view") === "undefined" ?true:$(oAdvs[i]).data("view");  //  对应广告位是否需要曝光
 				adv.viewed=false;   //被曝光时为true
 				adv.data={
 					uid:"-",
 					ref:preAdr,
-					mod:$(oAdvs[i]).data("aid"),
-					mtp:opt.amod || adv.ele.data("amod") || 1,
+					mod:adv.ele.data("mod"),
+					mtp:opt.mtp || adv.ele.data("mtp") || 1,
 					con:self.exportData(adv),
 					ck:"-"
 				};
 				if(adv.ele.data("swapimg") && !this.swapImg){
 					//只触发一次轮播图方法
-					adv.ele.addClass("curSwap");
+					adv.ele.addClass("curSwap").parent().css("z-index",100);
 					SwapImg({},this);
 					this.swapImg=true;
 				}
@@ -101,19 +101,21 @@
 					if($(oAdvs[i]).data("swapimg")){  //是轮播图广告位的情况
 						if($(oAdvs[i]).hasClass("curSwap")){
 							adv.viewed=true;
+							this.dataArr.push(adv);
 							if(!this.dataTimer){
 								this.discreteSend();
 							}
-							this.dataArr.push(adv);
+							
 						}
 					}else{ //如果不是轮播图的只要进入屏幕区域就算曝光
 						adv.viewed=true;
 
 						//如果定时提交数据的定时器没有开启的话，开启定时器
+						this.dataArr.push(adv);
 						if(!this.dataTimer){
 							this.discreteSend();
 						}
-						this.dataArr.push(adv);
+						
 						//this.sendData(adv);
 					}
 					
@@ -122,9 +124,11 @@
 				this.linkNodes(adv);
 				//console.log(this.advs);
 				//this.expAdvs.push(adv);
-				this.advFlag[aid]=true;
+				this.advFlag[mod]=true;
 			}
 		},
+
+		//判断广告位是否进入屏幕 进入即将广告对象缓存到(dataArr)中
 		insertData:function(){
 			var self=this;
 			if(self.advs.length === 0){
@@ -155,6 +159,7 @@
 			var self=this;
 			var discreteHandle=function(){
 				if(self.dataArr.length ===0){
+					clearInterval(self.dataTimer);
 					self.dataTimer=null;
 					return false;
 				}
@@ -165,6 +170,7 @@
 						self.dataArr.shift();
 						i++;
 					}else{
+						clearInterval(self.dataTimer);
 						self.dataTimer=null;
 						break;
 					}
@@ -174,7 +180,7 @@
 		},
 		// 获取曝光内容即广告位中所有连接的内容
 		exportData:function(adv){
-			return adv.ele.data("ideaid")
+			return adv.ele.data("con")
 		},
 		// 测试广告位是否在曝光区域
 		posTest:function(adv){
@@ -207,11 +213,14 @@
 		//获取点击元素的内容
 		linkData:function(that){
 			var ck=""+that.href;
+			var conStr;
 			if($(that).find("img").length){
-				ck+=$(that).find("img").eq(0).attr("title") || $(that).find("img").eq(0).attr("alt") ||"";
+				conStr=$(that).find("img").eq(0).attr("title") || $(that).find("img").eq(0).attr("alt")
+				
 			}else{
-				ck+=$(that).html() || "";
+				conStr=$(that).html();
 			}
+			ck+=conStr?";"+conStr:"";
 			return ck;
 		},
 		//获取用户ID
@@ -265,6 +274,7 @@
 
 		}
 		this.obj=obj;
+		this.parentSelector=opts.parentSelector || ".box";
 		this.swapSelector=opts.swapSelector || ".box .J_adv";
 		this.swapCur="curSwap";
 		this.iconSelector=opts.iconSelector || ".js-tagRoot";
@@ -296,29 +306,34 @@
 					}
 					self.swapHandle(i);
 				})
-
 			});
-			self.timer=setTimeout(function(){
+			self.timer=setInterval(function(){
 				self.swapHandle();
-			},self.interval);
-
+			},self.interval)
+			
+			$(self.parentSelector).hover(function(){
+				clearInterval(self.timer)
+			},function(){
+				self.timer=setInterval(function(){
+					self.swapHandle();
+				},self.interval)
+			});
 		},
 		swapHandle:function(i){
 			var self=this;
-			clearTimeout(self.timer);
 			self.swapFlag=true;
 			self.lastIndex=self.index;
 			self.index=i || ++self.index%$(self.swapSelector).length;
 			$(self.iconSelector).find("li").removeClass("cur").eq(self.index).addClass("cur");
 			$(self.swapSelector).removeClass("curSwap").eq(self.index).addClass("curSwap");
-			$(self.swapSelector).eq(self.index).animate({opacity:1},self.duration);
+			$(self.swapSelector).eq(self.index).animate({opacity:1},self.duration,function(){
+				$(this).parent().css("z-index",100)
+			});
 			$(self.swapSelector).eq(self.lastIndex).animate({opacity:0},self.duration,function(){
+				$(this).parent().css("z-index",0)
 				if(self.obj && typeof self.obj.insertData === "function"){
 					self.obj.insertData();
 				}
-				self.timer=setTimeout(function(){
-					self.swapHandle();
-				},self.interval);
 				self.swapFlag=false;
 			})
 		}
