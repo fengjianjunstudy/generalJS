@@ -86,7 +86,7 @@
 				adv.data={
 					uid:"-",
 					ref:preAdr,
-					mod:adv.ele.data("mod"),
+					mod:adv.ele.data("mod") || "-",
 					mtp:opt.mtp || adv.ele.data("mtp") || 1,
 					con:self.exportData(adv),
 					ck:"-"
@@ -180,7 +180,8 @@
 		},
 		// 获取曝光内容即广告位中所有连接的内容
 		exportData:function(adv){
-			return adv.ele.data("con")
+			var con=adv.ele.data("con") || "-";
+			return !!adv.ele.data("order")?con+",ad_order_"+adv.ele.data("order"):con+"-"
 		},
 		// 测试广告位是否在曝光区域
 		posTest:function(adv){
@@ -196,14 +197,15 @@
 		linkNodes:function(adv){
 			var self=this;
 			var aLinks=adv.ele.find("a");
-			if(aLinks.length === 0){
+			var iframeLinks=adv.ele.find("iframe")
+			console.log(iframeLinks)
+			if(aLinks.length === 0 && iframeLinks.length === 0 ){
 				return false;
 			}
 			aLinks.each(function(){
 				if($(this).attr("target") == undefined){
 					$(this).attr("target","_blank");
 				}
-
 				$(this).on("click",function(){
 					con=self.linkData(this);
 					self.sendData(adv,con);
